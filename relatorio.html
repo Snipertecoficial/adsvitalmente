@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico Google Ads — Vitallmente</title>
+<meta name="description" content="Relatório de diagnóstico da conta Google Ads da Vitallmente: custo por lead, conversões, palavras-chave e a apuração do caso dos leads que buscavam atendimento pelo SUS.">
+<style>
+  :root{
+    color-scheme: light;
+    --plane:#f9f9f7;
+    --surface:#fcfcfb;
+    --ink:#0b0b0b;
+    --ink-2:#52514e;
+    --muted:#898781;
+    --rule:#e1e0d9;
+    --axis:#c3c2b7;
+    --ring:rgba(11,11,11,.10);
+    --series:#2a78d6;
+    --series-soft:#cde2fb;
+    --good:#0ca30c;
+    --good-text:#006300;
+    --warning:#fab219;
+    --serious:#ec835a;
+    --critical:#d03b3b;
+    --shadow:0 1px 2px rgba(11,11,11,.05), 0 8px 24px rgba(11,11,11,.05);
+    --r:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --plane:#0d0d0d;
+      --surface:#1a1a19;
+      --ink:#f0efec;
+      --ink-2:#c3c2b7;
+      --muted:#898781;
+      --rule:#2c2c2a;
+      --axis:#383835;
+      --ring:rgba(255,255,255,.10);
+      --series:#3987e5;
+      --series-soft:#184f95;
+      --good:#0ca30c;
+      --good-text:#0ca30c;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --plane:#0d0d0d;
+    --surface:#1a1a19;
+    --ink:#f0efec;
+    --ink-2:#c3c2b7;
+    --muted:#898781;
+    --rule:#2c2c2a;
+    --axis:#383835;
+    --ring:rgba(255,255,255,.10);
+    --series:#3987e5;
+    --series-soft:#184f95;
+    --good:#0ca30c;
+    --good-text:#0ca30c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--plane);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+  /* ---------- header ---------- */
+  header{border-bottom:1px solid var(--rule);background:var(--surface)}
+  .head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between;padding:28px 0 22px}
+  .head > div:first-child{flex:1 1 440px;min-width:0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:620;letter-spacing:-.01em}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--series);flex:none}
+  h1{font-size:clamp(1.5rem,1.1rem + 1.6vw,2.1rem);line-height:1.15;letter-spacing:-.02em;margin:.45rem 0 .35rem}
+  .sub{color:var(--ink-2);margin:0;max-width:62ch}
+  .stamp{color:var(--muted);font-size:.82rem;margin-top:.7rem}
+  .toggle{
+    border:1px solid var(--ring);background:transparent;color:var(--ink-2);
+    border-radius:999px;padding:7px 13px;font:inherit;font-size:.82rem;cursor:pointer;flex:none
+  }
+  .toggle:hover{background:var(--plane)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;padding:4px;background:var(--plane);border:1px solid var(--rule);border-radius:999px;width:fit-content;max-width:100%;margin:22px 0 0}
+  .tabs button{
+    border:0;background:transparent;color:var(--ink-2);font:inherit;font-weight:560;font-size:.92rem;
+    padding:9px 18px;border-radius:999px;cursor:pointer;white-space:nowrap
+  }
+  .tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+  main{padding:28px 0 72px}
+  section{margin:0 0 30px}
+  h2{font-size:1.18rem;letter-spacing:-.01em;margin:0 0 4px}
+  h3{font-size:1rem;letter-spacing:-.005em;margin:0 0 10px}
+  .lead{color:var(--ink-2);margin:0 0 16px;max-width:72ch}
+  .eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin:0 0 6px}
+
+  .card{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+  .card + .card{margin-top:14px}
+
+  /* ---------- kpi ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .kpi{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+  .kpi .k{font-size:.78rem;color:var(--muted);font-weight:560;letter-spacing:.01em}
+  .kpi .v{font-size:clamp(1.5rem,1.2rem + 1.1vw,2rem);font-weight:640;letter-spacing:-.025em;margin-top:2px;line-height:1.1}
+  .kpi .n{font-size:.78rem;color:var(--ink-2);margin-top:4px}
+
+  /* ---------- bars ---------- */
+  .chart{margin-top:6px}
+  .bar-row{display:grid;grid-template-columns:minmax(120px,30%) 1fr auto;gap:12px;align-items:center;padding:7px 0;border-radius:8px}
+  .bar-row:hover{background:var(--plane)}
+  .bar-lab{font-size:.85rem;color:var(--ink-2);overflow-wrap:anywhere}
+  .track{height:16px;background:var(--plane);border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+  .fill{height:100%;background:var(--series);border-radius:0 4px 4px 0;min-width:2px}
+  .fill.zero{background:repeating-linear-gradient(135deg,var(--axis),var(--axis) 3px,transparent 3px,transparent 6px)}
+  .bar-val{font-size:.85rem;font-weight:580;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* ---------- tables ---------- */
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:520px}
+  caption{text-align:left;color:var(--muted);font-size:.78rem;padding-bottom:8px}
+  th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th:first-child,td:first-child{text-align:left;font-variant-numeric:normal}
+  thead th{color:var(--muted);font-weight:580;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--axis)}
+  tbody tr:last-child td{border-bottom:0}
+  tfoot td{font-weight:620;border-top:1px solid var(--axis);border-bottom:0}
+
+  /* ---------- chips / callouts ---------- */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--ring);white-space:nowrap}
+  .chip.crit{color:var(--critical);border-color:var(--critical)}
+  .chip.warn{color:var(--ink);border-color:var(--warning);background:color-mix(in srgb,var(--warning) 16%,transparent)}
+  .chip.ok{color:var(--good-text);border-color:var(--good)}
+
+  .note{border-left:3px solid var(--axis);padding:2px 0 2px 14px;color:var(--ink-2);margin:14px 0 0;font-size:.9rem}
+  .note.crit{border-left-color:var(--critical)}
+  .note.ok{border-left-color:var(--good)}
+
+  .terms{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 0;padding:0;list-style:none}
+  .terms li{font-size:.83rem;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;color:var(--ink-2);background:var(--plane)}
+
+  ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:12px 0 12px 42px;border-bottom:1px solid var(--rule)}
+  ol.steps li:last-child{border-bottom:0;padding-bottom:0}
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:0;top:12px;width:26px;height:26px;border-radius:50%;
+    background:var(--series-soft);color:var(--ink);display:grid;place-items:center;font-size:.8rem;font-weight:650
+  }
+  ol.steps strong{display:block}
+  ol.steps span{color:var(--ink-2);font-size:.9rem}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .plain p{max-width:68ch}
+  .plain .card p:last-child{margin-bottom:0}
+  .q{font-size:1.02rem;font-weight:620;letter-spacing:-.01em;margin:0 0 8px}
+
+  footer{border-top:1px solid var(--rule);padding:22px 0 40px;color:var(--muted);font-size:.8rem}
+  .hidden{display:none}
+  @media (max-width:560px){
+    .bar-row{grid-template-columns:1fr auto;}
+    .bar-row .track{grid-column:1 / -1;order:3}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="brand"><span class="dot"></span> Vitallmente · Google Ads</div>
+        <h1>Diagnóstico da conta e apuração do caso “anúncio do SUS”</h1>
+        <p class="sub">O que está sendo investido, quanto custa cada contato, quais palavras estão ativas e por que apareceram leads procurando atendimento gratuito.</p>
+        <p class="stamp">Dados extraídos em 26/10/2026, 23h20 (horário de Brasília) · Período de referência: 26/09 a 25/10/2026 · Relatórios do Google Ads não são em tempo real</p>
+      </div>
+      
+    </div>
+    <div class="tabs" role="tablist">
+      
+      
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ TÉCNICO ============ -->
+<div id="p-tec" role="tabpanel" aria-labelledby="tab-tec">
+
+  <section>
+    <p class="eyebrow">Dia analisado · 26 de outubro de 2026</p>
+    <h2>Desempenho de 26 de outubro</h2>
+    <p class="lead">Leitura feita às 23h20, com o dia praticamente completo.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="k">Investimento</div><div class="v">R$ 2.745</div><div class="n">5 campanhas ativas</div></div>
+      <div class="kpi"><div class="k">Conversões</div><div class="v">99</div><div class="n">eventos, não pessoas — ver ressalva</div></div>
+      <div class="kpi"><div class="k">Custo por conversão</div><div class="v">R$ 27,73</div><div class="n">média dos 30 dias: R$ 9,51</div></div>
+      <div class="kpi"><div class="k">Parcela de impressões</div><div class="v">11,82%</div><div class="n">do mercado disponível</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Onde o dinheiro de hoje foi parar</h3>
+      <div class="chart" id="c-hoje"></div>
+      <div class="scroll" style="margin-top:14px">
+        <table>
+          <caption>Quebra por campanha apurada às 23h10, quando o acumulado do dia era R$ 2.652,18 e 96 conversões.</caption>
+          <thead><tr><th>Campanha</th><th>Investimento</th><th>Conversões</th><th>Custo/conv.</th><th>Situação</th></tr></thead>
+          <tbody>
+            <tr><td>Avaliação online leads mundo</td><td>R$ 1.330,19</td><td>80</td><td>R$ 16,63</td><td><span class="chip ok">● saudável</span></td></tr>
+            <tr><td>Avaliação online leads capitais</td><td>R$ 559,84</td><td>6</td><td>R$ 93,31</td><td><span class="chip warn">▲ caro</span></td></tr>
+            <tr><td>Avaliação performance max</td><td>R$ 500,22</td><td>0</td><td>—</td><td><span class="chip crit">■ travada por política</span></td></tr>
+            <tr><td>Avaliação_Leads_v1</td><td>R$ 160,58</td><td>10</td><td>R$ 16,06</td><td><span class="chip ok">● saudável</span></td></tr>
+            <tr><td>Psicoterapia online leads</td><td>R$ 101,36</td><td>0</td><td>—</td><td><span class="chip crit">■ rastreamento quebrado</span></td></tr>
+          </tbody>
+          <tfoot><tr><td>Total</td><td>R$ 2.652,18</td><td>96</td><td>R$ 27,63</td><td></td></tr></tfoot>
+        </table>
+      </div>
+      <p class="note crit"><strong>R$ 601,58 do dia (23%) foi gasto sem registrar conversões</strong> — concentrado na Performance Max, reprovada pela política de saúde do Google, e na campanha de Psicoterapia, cuja ação de conversão está com configuração incorreta.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Últimos 30 dias · 26/09 a 25/10/2026</p>
+    <h2>A base de comparação · 30 dias</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="k">Investimento</div><div class="v">R$ 28.728,63</div><div class="n">no período</div></div>
+      <div class="kpi"><div class="k">Cliques</div><div class="v">25.064</div><div class="n">CPC médio R$ 1,15</div></div>
+      <div class="kpi"><div class="k">Conversões</div><div class="v">3.022</div><div class="n">somando 2 ações ativas</div></div>
+      <div class="kpi"><div class="k">Custo por conversão</div><div class="v">R$ 9,51</div><div class="n">parcela de impressões 13,91%</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Investimento por campanha nos 30 dias</h3>
+      <div class="chart" id="c-30"></div>
+      <div class="scroll" style="margin-top:14px">
+        <table>
+          <thead><tr><th>Campanha</th><th>Investimento</th><th>Conversões</th><th>Custo/conv.</th></tr></thead>
+          <tbody>
+            <tr><td>Avaliação online leads mundo</td><td>R$ 12.129,13</td><td>1.070,40</td><td>R$ 11,33</td></tr>
+            <tr><td>Avaliação online leads capitais</td><td>R$ 7.350,71</td><td>564,44</td><td>R$ 13,02</td></tr>
+            <tr><td>Avaliação performance max</td><td>R$ 6.038,73</td><td>1.186,96</td><td>R$ 5,09</td></tr>
+            <tr><td>Avaliação_Leads_v1</td><td>R$ 3.054,13</td><td>200,35</td><td>R$ 15,24</td></tr>
+            <tr><td>Psicoterapia online leads</td><td>R$ 155,91</td><td>0,00</td><td>—</td></tr>
+          </tbody>
+          <tfoot><tr><td>Total</td><td>R$ 28.728,63</td><td>3.022</td><td>R$ 9,51</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="note">A Performance Max era a campanha mais eficiente do mês (R$ 5,09 por conversão). Hoje ela está travada por política e queimou R$ 500 sem retorno — é a maior perda ativa da conta.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Ressalva metodológica</p>
+    <h2>“Conversão” não é o mesmo que “lead”</h2>
+    <p class="lead">Duas ações diferentes são somadas no mesmo número. Quem clica no WhatsApp <em>e</em> preenche o formulário conta duas vezes — então o custo real por pessoa é maior do que o painel mostra.</p>
+    <div class="card">
+      <div class="scroll">
+        <table>
+          <caption>Ações de conversão da conta — últimos 30 dias</caption>
+          <thead><tr><th>Ação de conversão</th><th>Status</th><th>Conversões</th></tr></thead>
+          <tbody>
+            <tr><td>Solicitar cotação (WhatsApp)</td><td style="text-align:left"><span class="chip ok">● ativa</span></td><td>1.189,96</td></tr>
+            <tr><td>Avaliação online</td><td style="text-align:left"><span class="chip ok">● ativa</span></td><td>1.839,84</td></tr>
+            <tr><td>Chamada real para whats psicoterapia</td><td style="text-align:left"><span class="chip crit">■ configuração incorreta</span></td><td>0,00</td></tr>
+            <tr><td>ABA contato</td><td style="text-align:left"><span class="chip crit">■ configuração incorreta</span></td><td>0,00</td></tr>
+            <tr><td>Furinho</td><td style="text-align:left"><span class="chip warn">▲ pendente</span></td><td>0,00</td></tr>
+            <tr><td>botao_whats · Botão whats 3 · Whatsapp · Chamada para whatsapp</td><td style="text-align:left"><span class="chip">removidas</span></td><td>0,00</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note crit">São <strong>4 ações removidas, 2 com configuração incorreta e 1 pendente</strong> convivendo com as 2 que funcionam. Enquanto isso não for limpo, nenhum número de lead da conta é 100% confiável.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Estrutura</p>
+    <h2>Palavras-chave ativas</h2>
+    <p class="lead">A conta tem 405 palavras-chave cadastradas; 34 geraram custo hoje. <strong>Todas estão em correspondência ampla</strong> — o modo em que o Google tem mais liberdade para mostrar o anúncio em buscas “parecidas”. É daí que vem o problema do SUS.</p>
+    <div class="card">
+      <div class="scroll">
+        <table>
+          <caption>Maiores investimentos em palavra-chave — campanha “Avaliação online leads mundo”, 30 dias</caption>
+          <thead><tr><th>Palavra-chave</th><th>Investimento</th><th>Conversões</th><th>Custo/conv.</th><th>Índice de qualidade</th></tr></thead>
+          <tbody>
+            <tr><td>avaliação neuropsicológica online</td><td>R$ 8.335,30</td><td>783,92</td><td>R$ 10,63</td><td>7/10</td></tr>
+            <tr><td>avaliação psicológica online</td><td>R$ 1.189,68</td><td>67,00</td><td>R$ 17,76</td><td>7/10</td></tr>
+            <tr><td>neuropsiquiatra online</td><td>R$ 960,80</td><td>82,49</td><td>R$ 11,65</td><td>7/10</td></tr>
+            <tr><td>avaliacao psicologica online <span style="color:var(--muted)">(sem acento)</span></td><td>R$ 386,30</td><td>33,00</td><td>R$ 11,71</td><td>4/10</td></tr>
+            <tr><td>neuropsicólogo online</td><td>R$ 301,09</td><td>31,49</td><td>R$ 9,56</td><td>8/10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Uma única palavra — <strong>avaliação neuropsicológica online</strong> — responde por 26% de todas as conversões da conta, ao melhor custo das campanhas de pesquisa. Ela é o motor do resultado e não deve ser desligada.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Apuração</p>
+    <h2>O caso do “anúncio do SUS”</h2>
+    <p class="lead">A reclamação procede em parte — e a causa é estrutural, não do texto do anúncio.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>1. O anúncio não fala de SUS</h3>
+        <p style="margin:0;color:var(--ink-2)">Foram verificados os <strong>39 recursos</strong> do anúncio principal — títulos, descrições, sitelinks e frases de destaque. <strong>Zero</strong> ocorrências de “SUS”, “grátis”, “gratuito”, “público” ou “convênio”.</p>
+        <p class="note ok" style="margin-top:12px">Nenhuma peça publicitária prometeu atendimento público ou gratuito.</p>
+      </div>
+      <div class="card">
+        <h3>2. Mas o anúncio aparecia nessas buscas</h3>
+        <p style="margin:0;color:var(--ink-2)">Nos últimos 30 dias, pessoas que pesquisaram por SUS, gratuidade ou convênio viram o anúncio, clicaram e preencheram o formulário.</p>
+        <div class="kpis" style="margin-top:14px;grid-template-columns:repeat(2,1fr)">
+          <div class="kpi" style="padding:12px 14px"><div class="k">Cliques pagos</div><div class="v" style="font-size:1.4rem">162</div></div>
+          <div class="kpi" style="padding:12px 14px"><div class="k">Investimento</div><div class="v" style="font-size:1.4rem">R$ 441,25</div></div>
+          <div class="kpi" style="padding:12px 14px"><div class="k">“Leads” gerados</div><div class="v" style="font-size:1.4rem">41,8</div></div>
+          <div class="kpi" style="padding:12px 14px"><div class="k">Termos distintos</div><div class="v" style="font-size:1.4rem">1.026</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Buscas reais que geraram clique pago</h3>
+      <ul class="terms">
+        <li>psiquiatra sus online</li><li>psicólogo pelo sus online</li><li>psicólogo sus</li>
+        <li>psiquiatra pelo sus</li><li>neuropediatra pelo sus</li><li>no sus tem neuropsicologia</li>
+        <li>avaliação neuropsicológica pelo sus</li><li>psiquiatra rio de janeiro sus</li>
+        <li>caps faz avaliação neuropsicológica</li><li>cadastro caps</li><li>caps salvador</li>
+        <li>psicologo gratis</li><li>psicólogos gratuitos</li>
+        <li>neuropsicologia convenio bradesco</li><li>psiquiatra convenio unimed</li><li>psiquiatra convenio sulamerica</li>
+      </ul>
+      <p class="note">A pessoa pesquisou por atendimento público, o anúncio da Vitallmente apareceu no topo, ela clicou e concluiu que se tratava de um serviço do SUS. O anúncio não prometeu isso — ele apenas estava no lugar errado.</p>
+    </div>
+
+    <div class="card">
+      <h3>Causa raiz: a trava de bloqueio estava nos lugares errados</h3>
+      <p class="lead" style="margin-bottom:12px">A conta tinha 653 palavras bloqueadas, mas só 80 eram desta família — e quase todas em campanhas que não rodam mais.</p>
+      <div class="scroll">
+        <table>
+          <caption>Bloqueios de SUS / gratuidade / convênio por campanha — situação encontrada</caption>
+          <thead><tr><th>Campanha</th><th>Investimento 30d</th><th>Bloqueios</th><th>“sus” bloqueado?</th></tr></thead>
+          <tbody>
+            <tr><td>Avaliação online leads mundo</td><td>R$ 12.129,13</td><td>1</td><td style="text-align:left"><span class="chip crit">■ não</span></td></tr>
+            <tr><td>Avaliação online leads capitais</td><td>R$ 7.350,71</td><td>1</td><td style="text-align:left"><span class="chip crit">■ não</span></td></tr>
+            <tr><td>Avaliação performance max</td><td>R$ 6.038,73</td><td>3</td><td style="text-align:left"><span class="chip crit">■ não</span></td></tr>
+            <tr><td>Avaliação_Leads_v1</td><td>R$ 3.054,13</td><td>12</td><td style="text-align:left"><span class="chip ok">● sim</span></td></tr>
+            <tr><td>Psicoterapia Leads / JOAO <span style="color:var(--muted)">(removidas)</span></td><td>R$ 0,00</td><td>39</td><td style="text-align:left"><span class="chip ok">● sim</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note crit">As duas campanhas que concentram <strong>R$ 19,5 mil por mês</strong> tinham exatamente <strong>um</strong> bloqueio desta família. A palavra “sus” só estava bloqueada em uma campanha pequena e em duas campanhas desativadas.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Executado em 26/10/2026</p>
+    <h2>Correção já aplicada</h2>
+    <div class="card">
+      <h3>Lista “Negativas — SUS, gratuidade e convênios” · 47 termos</h3>
+      <ul class="terms" style="margin-bottom:14px">
+        <li>sus</li><li>“pelo sus”</li><li>gratis</li><li>grátis</li><li>gratuito</li><li>gratuita</li>
+        <li>gratuitos</li><li>gratuitas</li><li>“de graça”</li><li>público</li><li>pública</li>
+        <li>“rede pública”</li><li>ubs</li><li>“posto de saúde”</li><li>caps</li><li>capsi</li><li>cras</li><li>creas</li>
+        <li>convênio</li><li>convênios</li><li>unimed</li><li>amil</li><li>hapvida</li><li>sulamerica</li>
+        <li>“bradesco saúde”</li><li>“plano de saúde”</li><li>“preço social”</li><li>“valor social”</li>
+        <li>assistencial</li><li>beneficente</li><li>prefeitura</li><li>“secretaria de saúde”</li>
+        <li style="border-style:dashed">+ variações sem acento</li>
+      </ul>
+      <div class="scroll">
+        <table>
+          <caption>Cobertura após a aplicação — todas as campanhas ativas</caption>
+          <thead><tr><th>Campanha</th><th>Como foi aplicado</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Avaliação online leads mundo</td><td style="text-align:left">lista compartilhada</td><td style="text-align:left"><span class="chip ok">● aplicada</span></td></tr>
+            <tr><td>Avaliação online leads capitais</td><td style="text-align:left">lista compartilhada</td><td style="text-align:left"><span class="chip ok">● aplicada</span></td></tr>
+            <tr><td>Avaliação_Leads_v1</td><td style="text-align:left">lista compartilhada</td><td style="text-align:left"><span class="chip ok">● aplicada</span></td></tr>
+            <tr><td>Psicoterapia online leads</td><td style="text-align:left">lista compartilhada</td><td style="text-align:left"><span class="chip ok">● aplicada</span></td></tr>
+            <tr><td>Avaliação performance max</td><td style="text-align:left">47 termos direto na campanha</td><td style="text-align:left"><span class="chip ok">● aplicada</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note ok">Nenhuma palavra-chave foi pausada, conforme o relatório. O objetivo é melhorar a <strong>qualidade</strong> dos contatos; o efeito no volume precisa ser acompanhado.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Sequência</p>
+    <h2>Próximos passos, por ordem de impacto</h2>
+    <div class="card">
+      <ol class="steps">
+        <li><strong>Destravar a Performance Max</strong><span>Todos os grupos de recursos estão limitados pela política “Saúde na publicidade personalizada”. É a campanha de menor custo por lead do mês e hoje gastou R$ 500 sem retorno.</span></li>
+        <li><strong>Limpar o rastreamento de conversões</strong><span>Corrigir ou remover as 2 ações com configuração incorreta, a pendente e as 4 removidas; definir o que de fato conta como lead.</span></li>
+        <li><strong>Eliminar a duplicação “mundo” × “capitais”</strong><span>As mesmas palavras disputam o mesmo leilão em duas campanhas — e a versão “capitais” paga mais caro pelo clique.</span></li>
+        <li><strong>Testar correspondência de frase ou exata</strong><span>Nas 3 palavras que concentram a maior parte do investimento, reduzindo ainda mais o tráfego irrelevante.</span></li>
+        <li><strong>Qualificar o preço no anúncio e na página</strong><span>Deixar explícito que é atendimento particular filtra quem busca gratuidade antes do clique — economia direta.</span></li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<!-- ============ SIMPLES ============ -->
+<div id="p-sim" role="tabpanel" aria-labelledby="tab-sim" class="plain">
+
+  <section>
+    <div class="card">
+      <p class="q">Quanto gastamos e o que entrou hoje?</p>
+      <p>O relatório de 26/10 registra cerca de <strong>R$ 2.745</strong> investidos e <strong>99 eventos de conversão</strong>, com custo de <strong>R$ 27,73 por evento</strong>. Esses eventos não representam necessariamente pessoas diferentes.</p>
+      <p>No acumulado do mês, a média está em <strong>R$ 9,51</strong>. Ou seja: hoje foi um dia caro. O motivo é específico — duas campanhas gastaram R$ 601 sem registrar conversões, e as duas têm problema identificado (uma está bloqueada pelo Google, a outra está com a medição quebrada).</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <p class="q">Cuidado com esse número de 99</p>
+      <p>O sistema conta duas coisas diferentes como “contato”: clicar no WhatsApp e preencher o formulário. Se a mesma pessoa fizer as duas, ela aparece como dois.</p>
+      <p>Então o número real de pessoas é menor, e o custo por pessoa é maior do que o painel mostra. Há também marcações antigas e quebradas no sistema, que precisam ser arrumadas para o número virar confiável.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <p class="q">E o cliente que disse ter visto “anúncio do SUS”?</p>
+      <p>A reclamação tem uma explicação no modo como os anúncios eram exibidos.</p>
+      <p><strong>Nenhum anúncio da Vitallmente fala de SUS, grátis ou convênio.</strong> Foram conferidos um por um, todos os 39 textos. Nada.</p>
+      <p><strong>Mas o anúncio estava aparecendo para quem pesquisa SUS no Google.</strong> Nos últimos 30 dias, houve 162 cliques depois de buscas como “psicólogo pelo SUS”, “psiquiatra SUS online” ou “CAPS faz avaliação neuropsicológica”. Isso custou R$ 441 e gerou cerca de 42 eventos de conversão, que não equivalem necessariamente a contatos únicos.</p>
+      <p>O que aconteceu foi isso: a pessoa pesquisou por atendimento do SUS, o anúncio da clínica apareceu no topo da página, ela clicou e achou que era um serviço público. O anúncio não prometeu nada disso — ele só apareceu no lugar errado.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <p class="q">Por que isso acontecia?</p>
+      <p>Todas as palavras-chave estão no modo mais aberto do Google, que deixa o anúncio aparecer para buscas “parecidas” com a que foi cadastrada.</p>
+      <p>Para evitar isso existe uma lista de palavras bloqueadas. E aqui estava o problema: a palavra “SUS” só estava bloqueada em <strong>uma campanha pequena e em duas campanhas que nem rodam mais</strong>. As duas campanhas que gastam R$ 19,5 mil por mês não tinham esse bloqueio.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <p class="q">O que foi aplicado em 26/10</p>
+      <p>Foi criada uma lista de bloqueio com <strong>47 termos</strong> — SUS, grátis, gratuito, CAPS, UBS, posto de saúde, convênio, Unimed, Amil, plano de saúde e variações — e aplicada em <strong>todas as 5 campanhas ativas</strong>.</p>
+      <p>O objetivo é reduzir as buscas irrelevantes na origem. <strong>Nenhuma palavra-chave foi desligada.</strong> O impacto no volume e na qualidade dos contatos precisa ser acompanhado após a aplicação.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <p class="q">O que vem a seguir</p>
+      <ol class="steps">
+        <li><strong>Destravar a campanha mais barata</strong><span>Ela está bloqueada por uma regra do Google sobre publicidade de saúde e hoje queimou R$ 500 sem resultado.</span></li>
+        <li><strong>Arrumar a medição de leads</strong><span>Para o número de contatos virar confiável e o custo real por pessoa ficar visível.</span></li>
+        <li><strong>Parar a concorrência interna</strong><span>Duas campanhas disputam a mesma busca e encarecem o clique uma da outra.</span></li>
+        <li><strong>Deixar o preço claro no anúncio</strong><span>Quem procura atendimento gratuito desiste antes de clicar — e isso economiza dinheiro.</span></li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<footer class="wrap">
+  Relatório gerado a partir dos dados da conta Google Ads da Vitallmente em 26/10/2026. Os relatórios do Google Ads não são atualizados em tempo real e conversões podem ser registradas com atraso.
+</footer>
+
+</body>
+</html>
